@@ -1,5 +1,5 @@
 {
-    "name": "cybridge/ckfinder3.5.3",
+    "name": "namdp06/ckfinder-3.5.3-fix-s3-upload-iam",
     "description": "CKFinder 3 package for Laravel",
     "type": "library",
     "license": "MIT",
