@@ -8,7 +8,7 @@ use Symfony\Component\HttpKernel\Kernel;
 
 class CKFinderDownloadCommand extends Command
 {
-    const LATEST_VERSION = '3.5.3';
+    const LATEST_VERSION   = '3.5.3';
     const FALLBACK_VERSION = '3.5.1';
 
     protected $name = 'ckfinder:download';
@@ -32,6 +32,9 @@ class CKFinderDownloadCommand extends Command
      */
     public function handle()
     {
+        $this->info('Connector already downloaded!');
+        exit();
+
         $targetPublicPath = realpath(__DIR__ . '/../../public/');
 
         if (!is_writable($targetPublicPath)) {
@@ -48,7 +51,7 @@ class CKFinderDownloadCommand extends Command
             return;
         }
 
-        if (file_exists($targetPublicPath.'/ckfinder/ckfinder.js')) {
+        if (file_exists($targetPublicPath . '/ckfinder/ckfinder.js')) {
             $questionText =
                 'It looks like the CKFinder distribution package has already been installed. ' .
                 "This command will overwrite the existing files.\nDo you want to proceed? [y/n]: ";
@@ -62,19 +65,19 @@ class CKFinderDownloadCommand extends Command
         $progressBar = null;
 
         $maxBytes = 0;
-        $ctx = stream_context_create([], [
+        $ctx      = stream_context_create([], [
             'notification' =>
-                function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) use (&$maxBytes, &$progressBar) {
-                    switch ($notificationCode) {
-                        case STREAM_NOTIFY_FILE_SIZE_IS:
-                            $maxBytes = $bytesMax;
-                            $progressBar = $this->output->createProgressBar($bytesMax);
-                            break;
-                        case STREAM_NOTIFY_PROGRESS:
-                            $progressBar->setProgress($bytesTransferred);
-                            break;
-                    }
+            function ($notificationCode, $severity, $message, $messageCode, $bytesTransferred, $bytesMax) use (&$maxBytes, &$progressBar) {
+                switch ($notificationCode) {
+                    case STREAM_NOTIFY_FILE_SIZE_IS:
+                        $maxBytes    = $bytesMax;
+                        $progressBar = $this->output->createProgressBar($bytesMax);
+                        break;
+                    case STREAM_NOTIFY_PROGRESS:
+                        $progressBar->setProgress($bytesTransferred);
+                        break;
                 }
+            },
         ]);
 
         $this->info('Downloading the CKFinder 3 distribution package.');
@@ -103,7 +106,7 @@ class CKFinderDownloadCommand extends Command
         // These files won't be overwritten if already exists
         $filesToKeep = [
             'ckfinder/config.js',
-            'ckfinder/ckfinder.html'
+            'ckfinder/ckfinder.html',
         ];
 
         for ($i = 0; $i < $zip->numFiles; $i++) {
@@ -133,12 +136,11 @@ class CKFinderDownloadCommand extends Command
             $tempZipFile,
             $targetPublicPath . '/ckfinder/config.php',
             $targetPublicPath . '/ckfinder/README.md',
-            $targetConnectorPath . '/README.md'
+            $targetConnectorPath . '/README.md',
         ]);
 
         $fs->deleteDirectory($targetPublicPath . '/ckfinder/core');
         $fs->deleteDirectory($targetPublicPath . '/ckfinder/userfiles');
-
 
         $this->info('Done. Happy coding!');
     }

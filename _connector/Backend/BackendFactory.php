@@ -89,8 +89,8 @@ class BackendFactory
      */
     public function __construct(CKFinder $app)
     {
-        $this->app = $app;
-        $this->acl = $app['acl'];
+        $this->app    = $app;
+        $this->acl    = $app['acl'];
         $this->config = $app['config'];
 
         $this->registerDefaultAdapters();
@@ -145,7 +145,7 @@ class BackendFactory
         }
 
         $backendConfig = $this->config->getBackendNode($backendName);
-        $adapterName = $backendConfig['adapter'];
+        $adapterName   = $backendConfig['adapter'];
 
         if (!isset($this->registeredAdapters[$adapterName])) {
             throw new \InvalidArgumentException(sprintf('Backends adapter "%s" not found. Please check configuration file.', $adapterName));
@@ -193,7 +193,7 @@ class BackendFactory
 
         // Create a default .htaccess to disable access to current private directory
         $privateDirPath = $this->config->getPrivateDirPath($privateDirIdentifier);
-        $htaccessPath = Path::combine($privateDirPath, '.htaccess');
+        $htaccessPath   = Path::combine($privateDirPath, '.htaccess');
         if (!$backend->has($htaccessPath)) {
             $backend->write($htaccessPath, "Order Deny,Allow\nDeny from all\n");
         }
@@ -216,7 +216,7 @@ class BackendFactory
         });
 
         $this->registerAdapter('dropbox', function ($backendConfig) {
-            $client = new DropboxClient($backendConfig['token']);
+            $client  = new DropboxClient($backendConfig['token']);
             $adapter = new DropboxAdapter($client, $backendConfig);
 
             return $this->createBackend($backendConfig, $adapter);
@@ -224,16 +224,21 @@ class BackendFactory
 
         $this->registerAdapter('s3', function ($backendConfig) {
             $clientConfig = [
-                'credentials' => [
-                    'key' => $backendConfig['key'],
+                'credentials'       => [
+                    'key'    => $backendConfig['key'],
                     'secret' => $backendConfig['secret'],
                 ],
                 'signature_version' => isset($backendConfig['signature']) ? $backendConfig['signature'] : 'v4',
-                'version' => isset($backendConfig['version']) ? $backendConfig['version'] : 'latest',
+                'version'           => isset($backendConfig['version']) ? $backendConfig['version'] : 'latest',
             ];
 
             if (isset($backendConfig['region'])) {
                 $clientConfig['region'] = $backendConfig['region'];
+            }
+
+            // remove credentials in case of using EC2 IAM role
+            if (!isset($clientConfig['credentials']['key']) || !isset($clientConfig['credentials']['secret'])) {
+                unset($clientConfig['credentials']);
             }
 
             $client = new S3Client($clientConfig);
@@ -248,7 +253,7 @@ class BackendFactory
         });
 
         $this->registerAdapter('azure', function ($backendConfig) {
-            $endpoint = sprintf('DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s', $backendConfig['account'], $backendConfig['key']);
+            $endpoint      = sprintf('DefaultEndpointsProtocol=https;AccountName=%s;AccountKey=%s', $backendConfig['account'], $backendConfig['key']);
             $blobRestProxy = ServicesBuilder::getInstance()->createBlobService($endpoint);
 
             $prefix = isset($backendConfig['root']) ? trim($backendConfig['root'], '/ ') : null;
