@@ -1,6 +1,6 @@
 {
     "name": "namdp06/ckfinder-3.5.3-fix-s3-upload-iam",
-    "description": "CKFinder 3 package for Laravel",
+    "description": "CKFinder 3 package for Laravel with fix custom upload S3 using EC2 IAM role",
     "type": "library",
     "license": "MIT",
     "require": {
